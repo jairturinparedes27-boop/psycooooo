@@ -31,7 +31,7 @@ app.use('/api/carrera', carreraRoutes);
 app.use('/api/curso', cursosRoutes);
 app.use('/api/ciclo', cicloRoutes);
 app.use('/api/curso-ciclo', cursosCicloRoutes);
-app.use('/api/alumno-curso', alumnocursosRoutes);
+app.use('/api/alumnocurso', alumnocursosRoutes);
 
 // Puerto
 const PORT = 3001;

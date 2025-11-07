@@ -1,120 +1,109 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+// src/components/GestionAlumnoCursos.jsx
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-export default function VistaAcademica() {
-  const [estructura, setEstructura] = useState([]);
-  const [expandedCarreras, setExpandedCarreras] = useState({});
-  const [expandedCiclos, setExpandedCiclos] = useState({});
-  const [expandedCursos, setExpandedCursos] = useState({});
+export default function GestionAlumnoCursos() {
+  const [estructura, setEstructura] = useState([]); // carreras → ciclos → cursos
+  const [alumnosCurso, setAlumnosCurso] = useState({}); // alumnos por curso
+  const [nuevoAlumnoDni, setNuevoAlumnoDni] = useState("");
 
+  // Traer la estructura de carreras, ciclos y cursos desde backend
   useEffect(() => {
-    fetchEstructura();
+    axios.get("http://localhost:3001/api/alumnocurso") // ruta que retorna la estructura jerárquica
+      .then(res => setEstructura(res.data))
+      .catch(err => console.error("Error cargando estructura:", err));
   }, []);
 
-  const fetchEstructura = async () => {
+  // Traer alumnos de un curso específico
+  const cargarAlumnos = async (course_id) => {
     try {
-      const res = await axios.get('http://localhost:3001/api/alumno-curso');
-      setEstructura(res.data);
+      const res = await axios.get(`http://localhost:3001/alumnocurso/${course_id}`);
+      setAlumnosCurso(prev => ({ ...prev, [course_id]: res.data }));
     } catch (err) {
-      alert('Error al cargar estructura académica');
+      console.error("Error cargando alumnos:", err);
     }
   };
 
-  const toggleCarrera = nombre => {
-    setExpandedCarreras(prev => ({ ...prev, [nombre]: !prev[nombre] }));
-  };
-
-  const toggleCiclo = nombre => {
-    setExpandedCiclos(prev => ({ ...prev, [nombre]: !prev[nombre] }));
-  };
-
-  const toggleCurso = nombre => {
-    setExpandedCursos(prev => ({ ...prev, [nombre]: !prev[nombre] }));
-  };
-
-  const handleEliminarAlumno = async dni => {
-    if (!window.confirm('¿Eliminar este alumno del curso?')) return;
+  // Agregar alumno a un curso
+  const agregarAlumno = async (course_id, ciclo) => {
+    if (!nuevoAlumnoDni) return alert("Ingresa el DNI del alumno");
     try {
-      await axios.delete(`http://localhost:3001/api/alumno/${dni}`);
-      fetchEstructura();
+      await axios.post("http://localhost:3001/alumnocurso", {
+        alumno_dni: nuevoAlumnoDni,
+        course_id,
+        ciclo
+      });
+      setNuevoAlumnoDni("");
+      cargarAlumnos(course_id);
     } catch (err) {
-      alert('Error al eliminar alumno');
+      console.error("Error agregando alumno:", err);
+      alert("Error al agregar alumno");
     }
   };
 
-  const handleAñadirAlumno = curso => {
-    alert(`Añadir alumno a ${curso}`);
-    // Aquí podrías abrir un modal o redirigir a un formulario
+  // Eliminar alumno de un curso
+  const eliminarAlumno = async (dni, course_id) => {
+    if (!window.confirm("¿Eliminar este alumno del curso?")) return;
+    try {
+      await axios.delete("http://localhost:3001/alumnocurso", { data: { alumno_dni: dni, course_id } });
+      cargarAlumnos(course_id);
+    } catch (err) {
+      console.error("Error eliminando alumno:", err);
+      alert("Error al eliminar alumno");
+    }
   };
 
   return (
-    <div className="gestor-container" style={{ padding: '20px', fontFamily: 'monospace' }}>
+    <div style={{ padding: "20px", fontFamily: "monospace" }}>
       <h2>📚 Vista Académica por Carrera, Ciclo y Curso</h2>
       {estructura.length === 0 ? (
-        <p>No hay datos disponibles.</p>
+        <p>No hay datos disponibles</p>
       ) : (
-        estructura.map(carrera => (
-          <div key={carrera.carrera} style={{ marginBottom: '20px' }}>
-            <button onClick={() => toggleCarrera(carrera.carrera)} style={{ fontWeight: 'bold' }}>
-              ▶ {carrera.carrera}
-            </button>
-            {expandedCarreras[carrera.carrera] &&
-              carrera.ciclos.map(ciclo => (
-                <div key={ciclo.ciclo} style={{ marginLeft: '20px' }}>
-                  <button onClick={() => toggleCiclo(ciclo.ciclo)} style={{ fontWeight: 'bold' }}>
-                    └─ {ciclo.ciclo}
-                  </button>
-                  {expandedCiclos[ciclo.ciclo] &&
-                    ciclo.cursos.map(curso => (
-                      <div key={curso.curso} style={{ marginLeft: '40px' }}>
-                        <button onClick={() => toggleCurso(curso.curso)} style={{ fontWeight: 'bold' }}>
-                          ├─ Curso: {curso.curso}
-                        </button>
+        estructura.map((carrera) => (
+          <div key={carrera.nombre} style={{ marginBottom: "20px" }}>
+            <h3>{carrera.nombre}</h3>
+            {carrera.ciclos.map((ciclo) => (
+              <div key={ciclo.nombre} style={{ marginLeft: "20px", marginBottom: "10px" }}>
+                <h4>{ciclo.nombre}</h4>
+                {ciclo.cursos.map((curso) => (
+                  <div key={curso.id} style={{ marginLeft: "20px", marginBottom: "5px" }}>
+                    <strong>{curso.nombre}</strong>
+                    <button
+                      style={{ marginLeft: "10px" }}
+                      onClick={() => cargarAlumnos(curso.id)}
+                    >
+                      Mostrar alumnos
+                    </button>
+
+                    <div style={{ marginTop: "5px" }}>
+                      <input
+                        type="text"
+                        placeholder="DNI alumno"
+                        value={nuevoAlumnoDni}
+                        onChange={(e) => setNuevoAlumnoDni(e.target.value)}
+                        style={{ marginRight: "5px" }}
+                      />
+                      <button onClick={() => agregarAlumno(curso.id, ciclo.nombre)}>
+                        Agregar alumno
+                      </button>
+                    </div>
+
+                    {alumnosCurso[curso.id]?.map((al) => (
+                      <div key={al.dni} style={{ marginLeft: "25px" }}>
+                        {al.nombre} {al.apellido} ({al.dni})
                         <button
-                          onClick={() => handleAñadirAlumno(curso.curso)}
-                          style={{
-                            marginLeft: '10px',
-                            backgroundColor: '#3498db',
-                            color: 'white',
-                            border: 'none',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
+                          onClick={() => eliminarAlumno(al.dni, curso.id)}
+                          style={{ marginLeft: "10px", color: "red" }}
                         >
-                          Añadir alumno
+                          Eliminar
                         </button>
-                        {expandedCursos[curso.curso] && (
-                          <div style={{ marginLeft: '20px' }}>
-                            {curso.alumnos.length === 0 ? (
-                              <p>Sin alumnos registrados.</p>
-                            ) : (
-                              curso.alumnos.map(alumno => (
-                                <div key={alumno.dni} style={{ marginBottom: '5px' }}>
-                                  └─ {alumno.nombre} {alumno.apellido} ({alumno.dni})
-                                  <button
-                                    onClick={() => handleEliminarAlumno(alumno.dni)}
-                                    style={{
-                                      marginLeft: '10px',
-                                      backgroundColor: '#e74c3c',
-                                      color: 'white',
-                                      border: 'none',
-                                      padding: '4px 8px',
-                                      borderRadius: '4px',
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    Eliminar
-                                  </button>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        )}
                       </div>
                     ))}
-                </div>
-              ))}
+
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         ))
       )}

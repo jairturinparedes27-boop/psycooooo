@@ -1,16 +1,19 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import RegistroAlumno from './components/RegistroAlumno';
-import RegistroProfesor from './components/RegistroProfesor';
-import RegistroCurso from './components/RegistroCurso';
-import RegistroCarrera from './components/RegistroCarrera';
-import GestorCarreras from './components/GestionCarreras';
-import AlumnoCursos from './components/GestionAlumnoCursos';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+
+import RegistroAlumno from "./components/RegistroAlumno";
+import RegistroProfesor from "./components/RegistroProfesor";
+import RegistroCurso from "./components/RegistroCurso";
+import RegistroCarrera from "./components/RegistroCarrera";
+import GestorCarreras from "./components/GestionCarreras";
+import AlumnoCursos from "./components/GestionAlumnoCursos";
+
+import "./App.css";
 
 function App() {
   return (
     <Router>
       <div className="App">
+
         <nav>
           <ul>
             <li><Link to="/registro-alumno">Registrar Alumno</Link></li>
@@ -30,6 +33,7 @@ function App() {
           <Route path="/gestion-carrera" element={<GestorCarreras />} />
           <Route path="/gestion-alumnocursos" element={<AlumnoCursos />} />
         </Routes>
+
       </div>
     </Router>
   );
