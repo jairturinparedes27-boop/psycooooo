@@ -1,0 +1,57 @@
+.gestor-container {
+  padding: 20px;
+  background-color: #f4f4f4;
+  font-family: Arial, sans-serif;
+}
+
+.gestor-container h2 {
+  margin-bottom: 10px;
+}
+
+.busqueda {
+  margin-bottom: 15px;
+}
+
+.busqueda input {
+  padding: 8px;
+  margin-right: 5px;
+}
+
+.busqueda button {
+  padding: 8px 12px;
+  margin-right: 5px;
+}
+
+form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+form input,
+form button {
+  padding: 8px;
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #e0e0e0;
+}
+
+button {
+  cursor: pointer;
+}

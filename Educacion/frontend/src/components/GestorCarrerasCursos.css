@@ -1,0 +1,137 @@
+.gestor-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.carrera-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #fdfdfd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.carrera-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.toggle-btn {
+  font-size: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.carrera-nombre {
+  font-weight: bold;
+  flex-grow: 1;
+  font-size: 18px;
+}
+
+.input-ciclo {
+  padding: 6px;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-ciclo {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-ciclo:hover {
+  background-color: #0056b3;
+}
+
+.ciclos-list {
+  margin-left: 30px;
+  margin-top: 10px;
+}
+
+.ciclo-box {
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #eef6ff;
+  border-radius: 6px;
+  border: 1px solid #cce0ff;
+}
+
+.ciclo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.curso-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.curso-list li {
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-eliminar-ciclo,
+.btn-eliminar-curso {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-eliminar-ciclo:hover,
+.btn-eliminar-curso:hover {
+  background-color: #c82333;
+}
+
+.asignar-curso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.btn-curso {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-curso:hover {
+  background-color: #218838;
+}
