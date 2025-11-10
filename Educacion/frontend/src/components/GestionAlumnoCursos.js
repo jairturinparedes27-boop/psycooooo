@@ -1,34 +1,32 @@
-// src/components/GestionAlumnoCursos.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "./GestionAlumnoCurs.css"; // 👈 Importa el CSS
 
 export default function GestionAlumnoCursos() {
-  const [estructura, setEstructura] = useState([]); // carreras → ciclos → cursos
-  const [alumnosCurso, setAlumnosCurso] = useState({}); // alumnos por curso
+  const [estructura, setEstructura] = useState([]);
+  const [alumnosCurso, setAlumnosCurso] = useState({});
   const [nuevoAlumnoDni, setNuevoAlumnoDni] = useState("");
+  const [mensajeError, setMensajeError] = useState(null);
 
-  // Traer la estructura de carreras, ciclos y cursos desde backend
   useEffect(() => {
-    axios.get("http://localhost:3001/api/alumnocurso") // ruta que retorna la estructura jerárquica
+    axios.get("http://localhost:3001/api/estructura")
       .then(res => setEstructura(res.data))
       .catch(err => console.error("Error cargando estructura:", err));
   }, []);
 
-  // Traer alumnos de un curso específico
   const cargarAlumnos = async (course_id) => {
     try {
-      const res = await axios.get(`http://localhost:3001/alumnocurso/${course_id}`);
+      const res = await axios.get(`http://localhost:3001/api/alumnocursos/${course_id}`);
       setAlumnosCurso(prev => ({ ...prev, [course_id]: res.data }));
     } catch (err) {
       console.error("Error cargando alumnos:", err);
     }
   };
 
-  // Agregar alumno a un curso
   const agregarAlumno = async (course_id, ciclo) => {
-    if (!nuevoAlumnoDni) return alert("Ingresa el DNI del alumno");
+    if (!nuevoAlumnoDni) return setMensajeError("Ingresa el DNI del alumno");
     try {
-      await axios.post("http://localhost:3001/alumnocurso", {
+      await axios.post("http://localhost:3001/api/alumnocursos", {
         alumno_dni: nuevoAlumnoDni,
         course_id,
         ciclo
@@ -37,69 +35,68 @@ export default function GestionAlumnoCursos() {
       cargarAlumnos(course_id);
     } catch (err) {
       console.error("Error agregando alumno:", err);
-      alert("Error al agregar alumno");
+      setMensajeError(err.response?.data?.error || "Error al agregar alumno");
     }
   };
 
-  // Eliminar alumno de un curso
   const eliminarAlumno = async (dni, course_id) => {
     if (!window.confirm("¿Eliminar este alumno del curso?")) return;
     try {
-      await axios.delete("http://localhost:3001/alumnocurso", { data: { alumno_dni: dni, course_id } });
+      await axios.delete("http://localhost:3001/api/alumnocursos", {
+        data: { alumno_dni: dni, course_id }
+      });
       cargarAlumnos(course_id);
     } catch (err) {
       console.error("Error eliminando alumno:", err);
-      alert("Error al eliminar alumno");
+      setMensajeError("Error al eliminar alumno");
     }
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "monospace" }}>
-      <h2>📚 Vista Académica por Carrera, Ciclo y Curso</h2>
+    <div className="container">
+      <h2 className="title">📚 Vista Académica por Carrera, Ciclo y Curso</h2>
+
+      {mensajeError && <div className="alert">{mensajeError}</div>}
+
       {estructura.length === 0 ? (
         <p>No hay datos disponibles</p>
       ) : (
         estructura.map((carrera) => (
-          <div key={carrera.nombre} style={{ marginBottom: "20px" }}>
-            <h3>{carrera.nombre}</h3>
+          <div key={carrera.nombre} className="card">
+            <h3 className="card-title">{carrera.nombre}</h3>
             {carrera.ciclos.map((ciclo) => (
-              <div key={ciclo.nombre} style={{ marginLeft: "20px", marginBottom: "10px" }}>
+              <div key={ciclo.nombre} className="ciclo">
                 <h4>{ciclo.nombre}</h4>
                 {ciclo.cursos.map((curso) => (
-                  <div key={curso.id} style={{ marginLeft: "20px", marginBottom: "5px" }}>
+                  <div key={curso.id} className="curso">
                     <strong>{curso.nombre}</strong>
-                    <button
-                      style={{ marginLeft: "10px" }}
-                      onClick={() => cargarAlumnos(curso.id)}
-                    >
+                    <button className="btn btn-secondary" onClick={() => cargarAlumnos(curso.id)}>
                       Mostrar alumnos
                     </button>
 
-                    <div style={{ marginTop: "5px" }}>
+                    <div className="form">
                       <input
                         type="text"
                         placeholder="DNI alumno"
                         value={nuevoAlumnoDni}
                         onChange={(e) => setNuevoAlumnoDni(e.target.value)}
-                        style={{ marginRight: "5px" }}
+                        className="input"
                       />
-                      <button onClick={() => agregarAlumno(curso.id, ciclo.nombre)}>
+                      <button className="btn btn-primary" onClick={() => agregarAlumno(curso.id, ciclo.nombre)}>
                         Agregar alumno
                       </button>
                     </div>
 
-                    {alumnosCurso[curso.id]?.map((al) => (
-                      <div key={al.dni} style={{ marginLeft: "25px" }}>
-                        {al.nombre} {al.apellido} ({al.dni})
-                        <button
-                          onClick={() => eliminarAlumno(al.dni, curso.id)}
-                          style={{ marginLeft: "10px", color: "red" }}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    ))}
-
+                    <div className="alumnos">
+                      {alumnosCurso[curso.id]?.map((al) => (
+                        <div key={al.dni} className="alumno">
+                          {al.nombre} {al.apellido} ({al.dni})
+                          <button className="btn btn-danger" onClick={() => eliminarAlumno(al.dni, curso.id)}>
+                            Eliminar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

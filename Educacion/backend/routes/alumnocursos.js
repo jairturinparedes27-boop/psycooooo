@@ -1,46 +1,75 @@
-// routes/carreras.js
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/db.js");
+const db = require("../config/db");
 
-// Retorna estructura jerárquica: carreras → ciclos → cursos
-router.get("/estructura", async (req, res) => {
+// 🔹 Obtener alumnos de un curso
+router.get("/:course_id", async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT ca.id AS carrera_id, ca.nombre AS carrera, ci.nombre AS ciclo, co.id AS curso_id, co.name AS curso
-      FROM carreras ca
-      LEFT JOIN ciclos ci ON ci.carreras_id = ca.id
-      LEFT JOIN curso_ciclo cc ON cc.ciclos_id = ci.id
-      LEFT JOIN courses co ON co.id = cc.cursos_id
-      ORDER BY ca.nombre, ci.nombre, co.name
-    `);
-
-    const estructura = [];
-
-    rows.forEach(row => {
-      let carrera = estructura.find(c => c.nombre === row.carrera);
-      if (!carrera) {
-        carrera = { nombre: row.carrera, ciclos: [] };
-        estructura.push(carrera);
-      }
-
-      if (!row.ciclo) return; // si no hay ciclos, continuar
-
-      let ciclo = carrera.ciclos.find(ci => ci.nombre === row.ciclo);
-      if (!ciclo) {
-        ciclo = { nombre: row.ciclo, cursos: [] };
-        carrera.ciclos.push(ciclo);
-      }
-
-      if (row.curso) {
-        ciclo.cursos.push({ id: row.curso_id, nombre: row.curso });
-      }
-    });
-
-    res.json(estructura);
+    const { course_id } = req.params;
+    const [rows] = await db.query(
+      `SELECT a.dni, a.nombre, a.apellido
+       FROM alumno_curso ac
+       JOIN alumnos a ON a.dni = ac.alumno_dni
+       WHERE ac.course_id = ?`,
+      [course_id]
+    );
+    res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error obteniendo estructura" });
+    console.error("Error obteniendo alumnos del curso:", err);
+    res.status(500).json({ error: "Error obteniendo alumnos del curso" });
+  }
+});
+
+// 🔹 Agregar alumno a un curso (validando que exista en alumnos)
+router.post("/", async (req, res) => {
+  try {
+    const { alumno_dni, course_id, ciclo } = req.body;
+
+    // Validar que el alumno exista
+    const [alumno] = await db.query("SELECT * FROM alumnos WHERE dni = ?", [alumno_dni]);
+    if (alumno.length === 0) {
+      return res.status(404).json({ error: "El alumno no existe" });
+    }
+
+    // Validar que el curso exista
+    const [curso] = await db.query("SELECT * FROM courses WHERE id = ?", [course_id]);
+    if (curso.length === 0) {
+      return res.status(404).json({ error: "El curso no existe" });
+    }
+
+    // Insertar relación
+    await db.query(
+      "INSERT INTO alumno_curso (alumno_dni, course_id, ciclo) VALUES (?, ?, ?)",
+      [alumno_dni, course_id, ciclo]
+    );
+
+    res.json({ message: "Alumno agregado al curso" });
+  } catch (err) {
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({ error: "El alumno ya está inscrito en este curso y ciclo" });
+    }
+    console.error("Error agregando alumno:", err);
+    res.status(500).json({ error: "Error agregando alumno" });
+  }
+});
+
+// 🔹 Eliminar alumno de un curso
+router.delete("/", async (req, res) => {
+  try {
+    const { alumno_dni, course_id } = req.body;
+    const [result] = await db.query(
+      "DELETE FROM alumno_curso WHERE alumno_dni = ? AND course_id = ?",
+      [alumno_dni, course_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Alumno no encontrado en este curso" });
+    }
+
+    res.json({ message: "Alumno eliminado del curso" });
+  } catch (err) {
+    console.error("Error eliminando alumno:", err);
+    res.status(500).json({ error: "Error eliminando alumno" });
   }
 });
 

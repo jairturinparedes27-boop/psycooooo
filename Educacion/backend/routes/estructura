@@ -1,0 +1,49 @@
+// routes/estructura.js
+const express = require("express");
+const router = express.Router();
+const pool = require("../config/db.js");
+
+// Retorna estructura jerárquica: carreras → ciclos → cursos
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT ca.id AS carrera_id, ca.nombre AS carrera,
+             ci.id AS ciclo_id, ci.nombre AS ciclo,
+             co.id AS curso_id, co.name AS curso
+      FROM carreras ca
+      LEFT JOIN ciclos ci ON ci.carreras_id = ca.id
+      LEFT JOIN curso_ciclo cc ON cc.ciclos_id = ci.id
+      LEFT JOIN courses co ON co.id = cc.cursos_id
+      ORDER BY ca.nombre, ci.nombre, co.name
+    `);
+
+    const estructura = [];
+
+    rows.forEach(row => {
+      let carrera = estructura.find(c => c.nombre === row.carrera);
+      if (!carrera) {
+        carrera = { nombre: row.carrera, ciclos: [] };
+        estructura.push(carrera);
+      }
+
+      if (!row.ciclo) return;
+
+      let ciclo = carrera.ciclos.find(ci => ci.nombre === row.ciclo);
+      if (!ciclo) {
+        ciclo = { nombre: row.ciclo, cursos: [] };
+        carrera.ciclos.push(ciclo);
+      }
+
+      if (row.curso) {
+        ciclo.cursos.push({ id: row.curso_id, nombre: row.curso });
+      }
+    });
+
+    res.json(estructura);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error obteniendo estructura" });
+  }
+});
+
+module.exports = router;

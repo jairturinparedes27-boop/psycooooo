@@ -14,6 +14,7 @@ const cursosRoutes = require('./routes/cursos');
 const cicloRoutes = require('./routes/ciclos');
 const cursosCicloRoutes = require('./routes/cursosCiclo');
 const alumnocursosRoutes = require('./routes/alumnocursos');
+const estructuraRoutes = require('./routes/estructura'); // ✅ nuevo
 
 // Validación de carga de rutas
 console.log('Alumno routes:', alumnoRoutes ? 'OK' : 'Error');
@@ -23,6 +24,7 @@ console.log('Cursos routes:', cursosRoutes ? 'OK' : 'Error');
 console.log('Ciclos routes:', cicloRoutes ? 'OK' : 'Error');
 console.log('CursosCiclo routes:', cursosCicloRoutes ? 'OK' : 'Error');
 console.log('AlumnoCursos routes:', alumnocursosRoutes ? 'OK' : 'Error');
+console.log('Esttructura routes:', estructuraRoutes ? 'OK' : 'Error');
 
 // Registro de rutas
 app.use('/api/alumno', alumnoRoutes);
@@ -31,7 +33,8 @@ app.use('/api/carrera', carreraRoutes);
 app.use('/api/curso', cursosRoutes);
 app.use('/api/ciclo', cicloRoutes);
 app.use('/api/curso-ciclo', cursosCicloRoutes);
-app.use('/api/alumnocurso', alumnocursosRoutes);
+app.use('/api/alumnocursos', alumnocursosRoutes);
+app.use('/api/estructura', estructuraRoutes); // ✅ nuevo
 
 // Puerto
 const PORT = 3001;
